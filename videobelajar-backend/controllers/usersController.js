@@ -5,36 +5,13 @@ import { executeQuery } from '../config/database.js';
 // Get all users
 export const getAllUsers = async (req, res) => {
     try {
-        const { role, search, sortBy, sort } = req.query;
-
-        let query = `
+        const query = `
             SELECT id, name, email, phone, gender, role, avatar, created_at, updated_at
             FROM users
+            ORDER BY created_at DESC
         `;
-
-        const params = [];
-        const conditions = [];
-
-        if (role) {
-            conditions.push('role = ?');
-            params.push(role);
-        }
-
-        if (search) {
-            conditions.push('name LIKE ?');
-            params.push(`%${search}%`);
-        }
-
-        if (conditions.length > 0) {
-            query += ' WHERE ' + conditions.join(' AND ');
-        }
-
-        const allowedSort = ['created_at', 'name', 'email'];
-        const sortColumn = allowedSort.includes(sortBy) ? sortBy : 'created_at';
-        const sortOrder = sort && sort.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
-        query += ` ORDER BY ${sortColumn} ${sortOrder}`;
-
-        const users = await executeQuery(query, params);
+        
+        const users = await executeQuery(query);
 
         res.json({
             success: true,

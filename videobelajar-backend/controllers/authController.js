@@ -1,9 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { v4 as uuidv4 } from 'uuid';
 import { validationResult } from 'express-validator';
 import { executeQuery } from '../config/database.js';
-import { sendVerificationEmail } from '../utils/email.js';
 
 // Generate JWT token
 const generateToken = (userId, email, role) => {
@@ -142,9 +140,6 @@ export const register = async (req, res) => {
 
         const { name, email, password, phone, gender } = req.body;
 
-        // Generate verification token
-        const verificationToken = uuidv4();
-
         // Check if email already exists
         const existingUserQuery = 'SELECT id FROM users WHERE email = ?';
         const existingUsers = await executeQuery(existingUserQuery, [email]);
@@ -166,10 +161,10 @@ export const register = async (req, res) => {
 
         // Insert new user
         const insertQuery = `
-            INSERT INTO users (name, email, password, phone, gender, role, avatar, verification_token)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO users (name, email, password, phone, gender, role, avatar)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
         `;
-
+        
         const result = await executeQuery(insertQuery, [
             name,
             email,
@@ -177,8 +172,7 @@ export const register = async (req, res) => {
             phone || null,
             gender || null,
             'student', // Default role
-            avatar,
-            verificationToken
+            avatar
         ]);
 
         // Get the created user
@@ -197,16 +191,9 @@ export const register = async (req, res) => {
             avatar: newUser.avatar
         };
 
-        // Send verification email
-        try {
-            await sendVerificationEmail(email, verificationToken);
-        } catch (emailError) {
-            console.error('Email send error:', emailError);
-        }
-
         res.status(201).json({
             success: true,
-            message: 'Pendaftaran berhasil, silakan verifikasi email Anda',
+            message: 'Pendaftaran berhasil',
             data: userData
         });
 
@@ -266,48 +253,6 @@ export const verifyToken = async (req, res) => {
         res.status(401).json({
             success: false,
             message: 'Token tidak valid'
-        });
-    }
-};
-
-// Email verification controller
-export const verifyEmail = async (req, res) => {
-    try {
-        const { token } = req.query;
-
-        if (!token) {
-            return res.status(400).json({
-                success: false,
-                message: 'Invalid Verification Token'
-            });
-        }
-
-        const users = await executeQuery(
-            'SELECT id FROM users WHERE verification_token = ?',
-            [token]
-        );
-
-        if (users.length === 0) {
-            return res.status(400).json({
-                success: false,
-                message: 'Invalid Verification Token'
-            });
-        }
-
-        await executeQuery(
-            'UPDATE users SET verification_token = NULL WHERE id = ?',
-            [users[0].id]
-        );
-
-        res.json({
-            success: true,
-            message: 'Email Verified Successfully'
-        });
-    } catch (error) {
-        console.error('Email verification error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Verification failed'
         });
     }
 };

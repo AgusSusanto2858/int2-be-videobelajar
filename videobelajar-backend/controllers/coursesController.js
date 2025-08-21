@@ -13,38 +13,24 @@ export const getAllCourses = async (req, res) => {
             });
         }
 
-        const { category, limit, offset, search, sortBy, sort } = req.query;
-
+        const { category, limit, offset } = req.query;
+        
         let query = `
-            SELECT id, title, description, photos, mentor, rolementor, avatar,
+            SELECT id, title, description, photos, mentor, rolementor, avatar, 
                    company, rating, review_count, price, category, created_at, updated_at
             FROM courses
         `;
-
+        
         const queryParams = [];
-        const conditions = [];
 
-        // Filtering
+        // Add category filter if provided
         if (category) {
-            conditions.push('category = ?');
+            query += ' WHERE category = ?';
             queryParams.push(category);
         }
 
-        // Searching
-        if (search) {
-            conditions.push('title LIKE ?');
-            queryParams.push(`%${search}%`);
-        }
-
-        if (conditions.length > 0) {
-            query += ' WHERE ' + conditions.join(' AND ');
-        }
-
-        // Sorting
-        const allowedSort = ['created_at', 'title', 'price', 'rating'];
-        const sortColumn = allowedSort.includes(sortBy) ? sortBy : 'created_at';
-        const sortOrder = sort && sort.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
-        query += ` ORDER BY ${sortColumn} ${sortOrder}`;
+        // Add ordering
+        query += ' ORDER BY created_at DESC';
 
         // Add pagination if provided
         if (limit) {
@@ -63,9 +49,9 @@ export const getAllCourses = async (req, res) => {
         let countQuery = 'SELECT COUNT(*) as total FROM courses';
         const countParams = [];
 
-        if (conditions.length > 0) {
-            countQuery += ' WHERE ' + conditions.join(' AND ');
-            countParams.push(...queryParams.slice(0, conditions.length));
+        if (category) {
+            countQuery += ' WHERE category = ?';
+            countParams.push(category);
         }
 
         const countResult = await executeQuery(countQuery, countParams);
