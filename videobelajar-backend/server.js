@@ -11,6 +11,7 @@ import { testConnection } from './config/database.js';
 import usersRoutes from './routes/usersRoutes.js';
 import coursesRoutes from './routes/coursesRoutes.js';
 import authRoutes from './routes/authRoutes.js';
+import uploadRoutes from './routes/uploadRoutes.js';
 
 // Load environment variables
 dotenv.config();
@@ -66,6 +67,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/courses', coursesRoutes);
+app.use('/api', uploadRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {

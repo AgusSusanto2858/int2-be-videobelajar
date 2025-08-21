@@ -12,6 +12,7 @@ CREATE TABLE users (
     gender ENUM('Laki-laki', 'Perempuan'),
     role ENUM('admin', 'user', 'student') DEFAULT 'student',
     avatar TEXT,
+    verification_token VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );

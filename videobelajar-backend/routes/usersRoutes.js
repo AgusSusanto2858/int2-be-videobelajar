@@ -8,8 +8,12 @@ import {
     deleteUser,
     resetPassword
 } from '../controllers/usersController.js';
+import authMiddleware from '../middleware/authMiddleware.js';
 
 const router = express.Router();
+
+// Apply authentication middleware to all user routes
+router.use(authMiddleware);
 
 // Get all users
 router.get('/', getAllUsers);
