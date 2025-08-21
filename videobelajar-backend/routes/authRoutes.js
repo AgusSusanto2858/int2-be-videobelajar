@@ -1,6 +1,6 @@
 import express from 'express';
 import { body } from 'express-validator';
-import { login, register, verifyToken } from '../controllers/authController.js';
+import { login, register, verifyToken, verifyEmail } from '../controllers/authController.js';
 
 const router = express.Router();
 
@@ -40,5 +40,8 @@ router.post('/register', [
 
 // Verify token route
 router.get('/verify', verifyToken);
+
+// Email verification route
+router.get('/verifikasi-email', verifyEmail);
 
 export default router;
